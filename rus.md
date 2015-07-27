@@ -1,36 +1,24 @@
-Когда ты пишешь такой Angular компонент, как контроллеры, сервисы или директивы, ты можешь указать все зависимости твоего компонента, которые ему необходимы для работы. Инъекции Ангуляра будут потом резолвить (разрешать, выполнять( эти зависимости и делать их доступными для Вашего компонента.
+Когда вы пишете такие Ангуляр компоненты, как контроллеры, сервисы или директивы, вы можешь указать все зависимости для компоненты, которые ей необходимы для работы. Инъекция ангуляра потом будет разрешать их и делать  доступными для вашего компонента.
 
-Самый простой путь указать зависимости - это назвать аргументы фабричного метода Вашего компонента или конструктора так же, как называются требуемые компоненты:
+Самый простой путь указать зависимости - это назвать аргументы фабричного метода вашего компонента или конструктора так же, как называются требуемые компоненты:
 
     angular
         .module("someModule")
         .factory("someService", function($http, $q) {
             // ...
         });
-    
 
-There's one issue with this approach: Because the dependency injector resolves
-the dependencies based on the argument names, the resolution**doesn't work with
-minified code**. In that case, parameters are generally shortened to single-
-letter variables, thereby making it impossible to use their names for dependency
-resolution.
+Но при таком подходе есть один недостаток: инъейкция зависимостей резолвит их, основываясь на именах аргументов, но такое решение **не работает с минифицированным кодом**. В этом случае, параметры обычно сокращают до однобуквенных переменных, тем самым делая невозможным использование их имен для разрешения зависимостей.
 
-Angular offers a solution to that problem. If you specify the dependency names
-explicitly as strings rather than relying on precisely matching argument names, 
-your components become**minification-safe**. You just have to make sure the
-order of the provided strings matches the order of parameters to the factory 
-method or constructor function:
+Ангуляр предлагает решение этой проблемы. Если указать имена зависимостей явно в виде строк, а не полагаться на точное совпадение имена аргументов, ваши компоненты становятся **минифицированно-безопасными**. Вам просто нужно убедиться, что порядок строк, соответствует порядку параметров в методе фабрики или функции конструктора:
 
     angular
         .module("someModule")
         .factory("someService", ["$http", "$q", function($http, $q) {
             // ...
         }]);
-    
 
-Instead of using the above inline array annotation syntax, you can also
-annotate the function with the`$inject` property, which is a simple string
-array of dependency names. This is the syntax I prefer to use:
+Вместо того, чтобы заинлайнить синтаксис массива, вы записать использовать функцию со свойством `$inject`, которое просто позволит записать массив зависимости имен. Этот синтаксис я предпочитаю использовать:
 
     angular
         .module("someModule")
@@ -43,35 +31,20 @@ array of dependency names. This is the syntax I prefer to use:
     }
     
 
-Either way, the code can now be minified without issues. The problem with both
-approaches, though, is that you only notice that your code is broken once you 
-actually minify it, execute it, and run into the dependency resolution error. It
-would be better if the code**failed fast** and **failed early**.
+В любом случае, код теперь может быть минимизирован без проблем. Проблема в обеих подходах, является то, то вы заметите, что ваш код не работает только тогда, когда его минифицируете, выполните и запустите в разрешении зависимостей. Было бы лучше, если код **быстро падал** и **рано падал**.
 
-As it just so happens, you can use the `ng-strict-di` attribute to make Angular
-behave exactly like that. This attribute is applied on the app element itself:
+Чтобы так и было, вы можете использовать атрибут `ng-strict-di` который заставит Ангуляр работать именно так. Этот атрибут применяется на самом элементе приложения:
 
     <html ng-app="someModule" ng-strict-di>
         <!-- ... -->
     </html>
     
 
-Quoting from the [Angular documentation][1], here's what it does:
+Цитата из [Ангуляр документации][1], вот что говорится:
 
-> If this attribute is present on the app element, the injector will be created
-> in "strict-di" mode. This means that the application will fail to invoke 
-> functions which do not use explicit function annotation (and are thus unsuitable
-> for minification), as described in the
->[Dependency Injection guide][2], and useful debugging info will assist in
-> tracking down the root of these bugs.
->
+> Если этот атрибут присутствует на элементе приложения, инжектор будет создан в режиме "strict-di». Это означает, что приложение не сможет вызывать функции, которые явно не используют аннотацию функций (и, таким образом, непригодны для минификации), как описано в [справочнике Инъекции Зависимости][2], и полезная отладочная информация будет помогать в поиске корня этих ошибок.
 
-Using strict dependency injection allows you to detect that an Angular
-component is unsuitable for minification without minifying your code and trying 
-it out. You should add`ng-strict-di` to your app element if you haven't done so
-already!
-
-[Tweet][3]
+Использование строгого инъекции зависимостей позволяет обнаружить, что компонента Ангуляра непригодна для минификации без попытки самой минификации кода. Вы должны добавить `ng-strict-di` к вашему элементу приложения, если вы этого еще не сделали!
 
  [1]: https://docs.angularjs.org/api/ng/directive/ngApp
  [2]: https://docs.angularjs.org/guide/di
